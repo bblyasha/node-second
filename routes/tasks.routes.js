@@ -4,6 +4,8 @@ const UserController = require("../controllers/userController")
 const UserService = require("../services/userServices")
 const Sentry = require("@sentry/node")
 const { route } = require("./authorization")
+const {authenticateToken} = require("../authMiddleware")
+const {createTodo, changeTitle, changeIsComleted, deleteTodo,validationErrors} = require('../helpers/validation')
 
 /**
  * @swagger
@@ -12,15 +14,18 @@ const { route } = require("./authorization")
  *      summary: Get all todos of current user
  *      tags:
  *        - Todos
+ *      security: 
+ *        - bearerAuth: []
  *      description: Returns todos array
  *      responses:
  *        200:
  *          description: Successful response
  */
 
-router.get('/', (req,res) => {
+router.get('/', authenticateToken, (req,res) => {
     try {
-        const tasks = UserService.getTasks()
+        const userId = req.id
+        const tasks = UserService.getUserTasks(userId)
         res.send(tasks)
     } catch (err) {
         Sentry.captureException(err)
@@ -34,6 +39,8 @@ router.get('/', (req,res) => {
  *     summary: Create a new todo for current user
  *     tags:
  *        - Todos
+ *     security: 
+ *        - bearerAuth: []
  *     description: Creating a new todo.
  *     requestBody:
  *       required: true
@@ -41,7 +48,7 @@ router.get('/', (req,res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             example: {"id":"1","title":"Buy bread","isCompleted":true,"idUser":5}
+ *             example: {"title":"Buy bread","isCompleted":true}
  *     responses:
  *       200:
  *         description: Todo has been successfully created.
@@ -49,13 +56,16 @@ router.get('/', (req,res) => {
  *         description: Bad request.
  */
 
-router.post('/', (req,res) => {
+router.post('/', authenticateToken, createTodo(), (req,res) => {
     try {
+        validationErrors(req, res)
         const newTask = req.body
-        UserController.addTask(newTask)
+        const idUser = req.id
+        UserController.addTask(newTask,idUser)
         res.send(newTask)
     } catch (err) {
         Sentry.captureException(err)
+        res.status(500).json({ message: 'Internal Server Error'})
     }
 })
 
@@ -66,13 +76,15 @@ router.post('/', (req,res) => {
  *     summary: Updates todo title for todo with id = {id}
  *     tags:
  *        - Todos
+ *     security: 
+ *        - bearerAuth: []
  *     description: Updates todo title for todo with id = {id}
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: Task ID.
  *     requestBody:
  *       required: true
@@ -88,8 +100,9 @@ router.post('/', (req,res) => {
  *         description: Bad request.
  */
 
-router.patch('/:id', (req,res) => {
+router.patch('/:id', authenticateToken, changeTitle(), (req,res) => {
     try {
+        validationErrors(req, res)
         const data = req.body
         const taskId = req.params.id
         const taskToUpdate = UserController.updateTask(taskId,data)
@@ -109,13 +122,15 @@ router.patch('/:id', (req,res) => {
  *     summary: Updates isCompleted property value to the opposite 
  *     tags:
  *        - Todos
+ *     security: 
+ *        - bearerAuth: []
  *     description: Updates isCompleted property value to the opposite
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: Task ID.
  *     responses:
  *       200:
@@ -124,8 +139,9 @@ router.patch('/:id', (req,res) => {
  *         description: Bad request.
  */
 
-router.patch('/:id/isCompleted', (req,res) => {
+router.patch('/:id/isCompleted', authenticateToken, changeIsComleted(), (req,res) => {
     try {
+        validationErrors(req, res)
         const taskId = req.params.id
         const  i = UserController.updateIsCompleted(taskId)
         if(i == -1) {
@@ -144,13 +160,15 @@ router.patch('/:id/isCompleted', (req,res) => {
  *     summary: Delete todo with {id}
  *     tags:
  *        - Todos
+ *     security: 
+ *        - bearerAuth: []
  *     description: Deletes todo by ID.
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: Task ID.
  *     responses:
  *       200:
@@ -159,8 +177,9 @@ router.patch('/:id/isCompleted', (req,res) => {
  *         description: Bad request.
  */
 
-router.delete('/:id', (req,res) => {
+router.delete('/:id', authenticateToken, deleteTodo(), (req,res) => {
     try {
+        validationErrors(req, res)
         const taskId = req.params.id
         const i = UserController.deleteTask(taskId)
         if(i == -1) {

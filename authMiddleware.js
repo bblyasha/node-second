@@ -9,12 +9,11 @@ const authenticateToken = (req,res,next) => {
         if (token == null) res.sendStatus(401)
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
             if (err) throw new Error ('invalid token')
-            req.user = user
+            req.id = user.id
             next()
         })
     } catch (err) {
         res.sendStatus(403)
     }
 }
-
 module.exports = {authenticateToken}

@@ -40,9 +40,9 @@ class UserController {
         } else return null
     }
 
-    addTask(data) {
+    addTask(data,idUser) {
         const tasks = UserService.getTasks()
-        const {title, isCompleted, idUser} = data
+        const {title, isCompleted} = data
         const uniqId = uuid.v4()
         tasks.push({id: uniqId, title, isCompleted, idUser})
         UserService.saveTasks(tasks)

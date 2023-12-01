@@ -20,7 +20,17 @@ const swaggerOptions = {
         openapi: '3.0.0',
         info: {
           title:  "Users API",
-          description: "API for getting, creating and updating users and their todo tasksn"
+          description: "API for getting, creating and updating users and their todo tasks"
+        },
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+              name: 'Authorization'
+            }
+          }
         }
     },
     apis: ["./routes/authorization.js", "./routes/tasks.routes.js"]

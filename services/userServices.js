@@ -12,6 +12,7 @@ class UserService {
         const user = users.find(u => u.email == data)
         return user
     }
+
     createUser(data) {
         const users = this.getRegisteredUsers()
         users.push(data)
@@ -20,12 +21,18 @@ class UserService {
     }
 
     getTasks() {
-        const data = fs.readFileSync('tasks.json', "utf8")
-        return JSON.parse(data)
+        const todos = fs.readFileSync('tasks.json', "utf8")
+        return JSON.parse(todos)
     }
 
-    saveTasks(data) {
-        fs.writeFileSync('tasks.json', JSON.stringify(data), 'utf8')
+    getUserTasks(userId) {
+        const todos = this.getTasks()
+        const userTodos = todos.filter(todo => todo.idUser == userId)
+        return userTodos
+    }
+
+    saveTasks(updateTodos) {
+        fs.writeFileSync('tasks.json', JSON.stringify(updateTodos), 'utf8')
     }
 }
 

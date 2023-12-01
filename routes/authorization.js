@@ -5,8 +5,7 @@ const UserService = require("../services/userServices")
 const {authenticateToken} = require("../authMiddleware")
 const jwt = require('jsonwebtoken')
 const Sentry = require("@sentry/node")
-
-
+const {userValidation, validationErrors} = require('../helpers/validation')
 
 router.get('/registeredUsers', authenticateToken, (req,res) => {
     try {
@@ -31,7 +30,7 @@ router.get('/registeredUsers', authenticateToken, (req,res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             example: {"email":"h@h","password":"hhh"}
+ *             example: {"email":"natalya@mail.ru","password":"natalya"}
  *     responses:
  *       200:
  *         description: Todo has been successfully created.
@@ -39,8 +38,9 @@ router.get('/registeredUsers', authenticateToken, (req,res) => {
  *         description: Bad request.
  */
 
-router.post('/login', async (req,res) => {
+router.post('/login', userValidation(), async (req,res) => {
     try {
+        validationErrors(req,res)
         const token = await UserController.login(req.body)
         if (token == null) res.status(400).json({message: "Пользователь не найден"})
         res.send(token)
@@ -63,7 +63,7 @@ router.post('/login', async (req,res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             example: {"email":"h@h","password":"hhh"}
+ *             example: {"email":"natalya@mail.ru","password":"natalya"}
  *     responses:
  *       200:
  *         description: Todo has been successfully created.
@@ -71,8 +71,9 @@ router.post('/login', async (req,res) => {
  *         description: Bad request.
  */
 
-router.post('/register', async (req,res) => {
+router.post('/register', userValidation(), async (req,res) => {
     try {
+        validationErrors(req,res)
         const data = req.body
         const createdUser =  await UserController.register(data)
         if (createdUser == null) res.status(400).json({message: "Пользователь с таким именем уже существует"})
