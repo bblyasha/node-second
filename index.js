@@ -1,7 +1,9 @@
 const express = require('express')
 require('dotenv').config()
 let app = express()
+const {db} = require('./config/db.js')
 const Sentry = require("@sentry/node")
+db()
 
 app.use(express.json())
 

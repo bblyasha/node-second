@@ -9,8 +9,7 @@ function validationErrors (req,res) {
 }
 
 
-function createTodo () {
-    return [
+const createTodo = [
         body('title')
           .notEmpty()
           .withMessage('Поле title является обязательным')
@@ -25,10 +24,8 @@ function createTodo () {
           .isBoolean()
           .withMessage('Поле isCompleted должно быть булевым значением'),
       ]
-}
 
-function changeTitle () {
-    return [
+const changeTitle = [
         body('title')
           .notEmpty()
           .withMessage('Поле title является обязательным')
@@ -43,31 +40,25 @@ function changeTitle () {
           .isString()
           .withMessage('Поле id должно быть строкой')
     ]
-}
 
-function changeIsComleted() {
-    return [
+const changeIsComleted = [
         param('id')
           .notEmpty()
           .withMessage('Поле id является обязательным')
           .isString()
           .withMessage('Поле id должно быть строкой')
     ]
-}
 
-function deleteTodo() {
-    return [
+const deleteTodo = [
         param('id')
           .notEmpty()
           .withMessage('Поле id является обязательным')
           .isString()
           .withMessage('Поле id должно быть строкой')
     ]
-}
 
 
-function userValidation() {
-    return [
+const userValidation = [
     body('email')
       .notEmpty()
       .withMessage('Поле email является обязательным')
@@ -80,7 +71,6 @@ function userValidation() {
       .isLength({ min: 6 })
       .withMessage('Пароль должен содержать не менее 6 символов')
     ]
-}
 
 module.exports = {
     createTodo,

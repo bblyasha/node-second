@@ -38,16 +38,7 @@ router.get('/registeredUsers', authenticateToken, (req,res) => {
  *         description: Bad request.
  */
 
-router.post('/login', userValidation(), async (req,res) => {
-    try {
-        validationErrors(req,res)
-        const token = await UserController.login(req.body)
-        if (token == null) res.status(400).json({message: "Пользователь не найден"})
-        res.send(token)
-    } catch(err) {
-        Sentry.captureException(err)
-    }
-})
+router.post('/login', userValidation, UserController.login)
 
 /**
  * @swagger
@@ -71,17 +62,7 @@ router.post('/login', userValidation(), async (req,res) => {
  *         description: Bad request.
  */
 
-router.post('/register', userValidation(), async (req,res) => {
-    try {
-        validationErrors(req,res)
-        const data = req.body
-        const createdUser =  await UserController.register(data)
-        if (createdUser == null) res.status(400).json({message: "Пользователь с таким именем уже существует"})
-        res.send(createdUser)
-    } catch (err) {
-        Sentry.captureException(err)
-    }
-})
+router.post('/register', userValidation, UserController.register)
 
 
 

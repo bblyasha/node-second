@@ -1,38 +1,79 @@
 const fs = require('fs')
 const { use } = require('../routes')
+const {ObjectId} = require('mongodb')
+const {getConnect, useDefaultDb} = require('../config/db')
 
 class UserService {
-    getRegisteredUsers() {
-        const data = fs.readFileSync('users.json', "utf8")
-        return JSON.parse(data)
+
+    async getTodos() {
+        return new Promise(async (res,rej) => {
+            const client = await getConnect()
+            const db = await useDefaultDb(client)
+            const todos = await db.collection('todos').find({}).toArray()
+            client.close()
+            res(todos)
+        })
     }
 
-    getOneUser(data) {
-        const users = this.getRegisteredUsers()
-        const user = users.find(u => u.email == data)
-        return user
+    async getTodoByUserId(idUser) {
+        return new Promise(async (res,rej) => {
+            const client = await getConnect()
+            const db = await useDefaultDb(client)
+            const todos = await db.collection('todos').find({idUser}).toArray()
+            client.close()
+            res(todos)
+        })
     }
 
-    createUser(data) {
-        const users = this.getRegisteredUsers()
-        users.push(data)
-        fs.writeFileSync('users.json', JSON.stringify(users), 'utf8')
-        return data
+    async addTodo(newTask, idUser) {
+        return new Promise(async (res,rej) => {
+            const client = await getConnect()
+            const db = await useDefaultDb(client)
+            const todoWithUserId = {...newTask, idUser}
+            const todos = await db.collection('todos').insertOne(todoWithUserId)
+            client.close()
+            res(todos)
+        })
     }
 
-    getTasks() {
-        const todos = fs.readFileSync('tasks.json', "utf8")
-        return JSON.parse(todos)
+    async updateTodo(id,title) {
+        return new Promise(async (res,rej) => {
+            const client = await getConnect()
+            const db = await useDefaultDb(client)
+            const todos = await db.collection('todos').updateOne({ _id: new ObjectId(id) }, { $set: {title} })
+            client.close()
+            res(todos)
+        })
+    }
+    async changeCompeledStatus(id) {
+        return new Promise(async (res, rej) => {
+            const client = await getConnect();
+            const db = await useDefaultDb(client);
+            const todo = await db.collection('todos').findOne({ _id: new ObjectId(id) })
+            if (!todo) {
+                client.close();
+                return rej({ message: 'Todo не найден' });
+            }
+    
+            const newCompletedStatus = !todo.isCompleted;
+
+            const result = await db.collection('todos').updateOne(
+                { _id: new ObjectId(id) },
+                { $set: { isCompleted: newCompletedStatus } }
+            );
+            client.close();
+            res(result)
+        });
     }
 
-    getUserTasks(userId) {
-        const todos = this.getTasks()
-        const userTodos = todos.filter(todo => todo.idUser == userId)
-        return userTodos
-    }
-
-    saveTasks(updateTodos) {
-        fs.writeFileSync('tasks.json', JSON.stringify(updateTodos), 'utf8')
+    async deleteTodo(id) {
+        return new Promise(async (res,rej) => {
+            const client = await getConnect()
+            const db = await useDefaultDb(client)
+            const todos = await db.collection('todos').deleteOne({_id: new ObjectId(id)})
+            client.close()
+            res(todos)
+        })
     }
 }
 

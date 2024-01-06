@@ -1,11 +1,12 @@
 const express = require("express")
 const router = express.Router()
 const UserController = require("../controllers/userController")
-const UserService = require("../services/userServices")
-const Sentry = require("@sentry/node")
 const { route } = require("./authorization")
 const {authenticateToken} = require("../authMiddleware")
-const {createTodo, changeTitle, changeIsComleted, deleteTodo,validationErrors} = require('../helpers/validation')
+const {createTodo, changeTitle, changeIsComleted, deleteTodo} = require('../helpers/validation')
+
+
+//router.get('/', authenticateToken, UserController.getAllTasks)
 
 /**
  * @swagger
@@ -22,15 +23,7 @@ const {createTodo, changeTitle, changeIsComleted, deleteTodo,validationErrors} =
  *          description: Successful response
  */
 
-router.get('/', authenticateToken, (req,res) => {
-    try {
-        const userId = req.id
-        const tasks = UserService.getUserTasks(userId)
-        res.send(tasks)
-    } catch (err) {
-        Sentry.captureException(err)
-    }
-})
+router.get('/', authenticateToken, UserController.getUserTasks)
 
 /**
  * @swagger
@@ -56,18 +49,7 @@ router.get('/', authenticateToken, (req,res) => {
  *         description: Bad request.
  */
 
-router.post('/', authenticateToken, createTodo(), (req,res) => {
-    try {
-        validationErrors(req, res)
-        const newTask = req.body
-        const idUser = req.id
-        UserController.addTask(newTask,idUser)
-        res.send(newTask)
-    } catch (err) {
-        Sentry.captureException(err)
-        res.status(500).json({ message: 'Internal Server Error'})
-    }
-})
+router.post('/', authenticateToken, createTodo, UserController.addTask)
 
 /**
  * @swagger
@@ -100,20 +82,7 @@ router.post('/', authenticateToken, createTodo(), (req,res) => {
  *         description: Bad request.
  */
 
-router.patch('/:id', authenticateToken, changeTitle(), (req,res) => {
-    try {
-        validationErrors(req, res)
-        const data = req.body
-        const taskId = req.params.id
-        const taskToUpdate = UserController.updateTask(taskId,data)
-        if(!taskToUpdate) {
-            res.sendStatus(404)
-        }
-        res.send(taskToUpdate)
-    } catch (err) {
-        Sentry.captureException(err) 
-    }
-})
+router.patch('/:id', authenticateToken, changeTitle, UserController.updateTask)
 
 /**
  * @swagger
@@ -139,19 +108,7 @@ router.patch('/:id', authenticateToken, changeTitle(), (req,res) => {
  *         description: Bad request.
  */
 
-router.patch('/:id/isCompleted', authenticateToken, changeIsComleted(), (req,res) => {
-    try {
-        validationErrors(req, res)
-        const taskId = req.params.id
-        const  i = UserController.updateIsCompleted(taskId)
-        if(i == -1) {
-            res.send(false)
-        } 
-        else res.send(true)
-    } catch (err) {
-        Sentry.captureException(err)
-    }
-})
+router.patch('/:id/isCompleted', authenticateToken, changeIsComleted, UserController.updateIsCompleted)
 
 /**
  * @swagger
@@ -177,18 +134,6 @@ router.patch('/:id/isCompleted', authenticateToken, changeIsComleted(), (req,res
  *         description: Bad request.
  */
 
-router.delete('/:id', authenticateToken, deleteTodo(), (req,res) => {
-    try {
-        validationErrors(req, res)
-        const taskId = req.params.id
-        const i = UserController.deleteTask(taskId)
-        if(i == -1) {
-            res.send(false)
-        } 
-        else res.send(true)
-    } catch (err) {
-        Sentry.captureException(err)
-    }
-})
+router.delete('/:id', authenticateToken, deleteTodo, UserController.deleteTask)
 
 module.exports = router
