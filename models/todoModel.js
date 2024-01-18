@@ -12,21 +12,8 @@ const todoSchema = new Schema({
     }
 })
 
-const userSchema = new Schema({
-    email: {
-        type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    }
-})
-
 const Todo = mongoose.model('Todo', todoSchema)
-const User = mongoose.model('User', userSchema)
 
 module.exports = {
-    Todo,
-    User
+    Todo
 }

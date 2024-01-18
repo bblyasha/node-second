@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 const {validationErrors} = require('../helpers/validation')
 const Sentry = require('@sentry/node')
-const {User} = require("../models/mongooseModel");
+const {User} = require("../models/userModel");
 
 
 class UserController {
